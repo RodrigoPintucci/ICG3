@@ -2,7 +2,6 @@
 <html>
 <head>
 	<title> Processamento de imagens em Canvas </title>
-	Access-Control-Allow-Origin: *
 	<!-- MathJax para equações matemáticas em TeX -->
 	<link href="style2.css" rel="stylesheet"/>
 	<script type="text/javascript" async
@@ -17,8 +16,8 @@
 <h3>Leitura e escrita de imagens com Canvas</h3>
 
 <figure>
-	<canvas id="imagemOriginal" width="1632" height="3264"></canvas>
-	<canvas id="imagemOutput" width="1632" height="3264"></canvas>
+	<canvas id="imagemOriginal" width="2000" height="1258"></canvas>
+	<canvas id="imagemOutput" width="2000" height="1258"></canvas>
 <figcaption>
 		Imagem da esquerda: Original. Imagem da direita: Imagem processada.
 	</figcaption>
@@ -44,7 +43,7 @@
 //and it does not consider files on your hard drive as being from the same domain as an html document also on your hard drive.	
 //https://developpaper.com/explain-how-to-solve-the-cross-domain-problem-of-canvas-image-getimagedata-todataurl/
 	
-	var imgUrl = "https://cdn.discordapp.com/attachments/420050701411024907/918196098185699368/desenhoICG.jpg";
+	var imgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Cephalopoda.jpg/1280px-Cephalopoda.jpg";
 	//var imgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Eiffel_tower_at_Exposition_Universelle%2C_Paris%2C_1889.jpg/800px-Eiffel_tower_at_Exposition_Universelle%2C_Paris%2C_1889.jpg";
    
 	imgOriginal.crossOrigin = '';
@@ -56,7 +55,7 @@
 		//ctxOutput.drawImage(imgOriginal, 50, 50);
 		//ctxOutput.drawImage(imgOriginal, 100, 100);
 		
-		imgDataOut = ctxOriginal.getImageData(0, 0, 20, 20);
+		imgDataOut = ctxOriginal.getImageData(0, 0, 200, 200);
 		
 		// invert colors
 		for (let i = 0; i < imgDataOut.data.length; i += 4) {
