@@ -29,6 +29,12 @@
 	<h2>Após modificar o canal de luminância, podemos retornar ao padrão RGB e perceber a diferença de paleta. Um novo histograma acompanha esta imagem para indicar a diferença.</h2>
 	<canvas id="imagemOutput2" width="1250" height="800"></canvas>
 
+	<h1>Aplicação de Filtros</h1>
+	<h2>Agora, vamos pegar outra imagem para aplicar filtros. Para tornar esse processo mais fácil, primeiro vamos torná-la preto e branco.</h2>
+	<canvas id="imagemFilter" width="1020" height="550"></canvas>
+
+	<canvas id="imagemFilter2" width="1020" height="550"></canvas>
+
 <script>
 
     const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0);
@@ -41,22 +47,33 @@
 
 	var canvasOut2 = document.getElementById("imagemOutput2");
 	var ctxOutput2 = canvasOut2.getContext("2d");
+
+	var canvasFilter = document.getElementById("imagemFilter");
+	var ctxFilter = canvasFilter.getContext("2d");
+
+	var canvasFilter2 = document.getElementById("imagemFilter2");
+	var ctxFilter2 = canvasFilter2.getContext("2d");
 	
 	var imgOriginal = new Image();
 	var imgDataOut = new Image();
     var imgDataOut2 = new Image();
+	var imgFilter = new Image();
+	var imgFilter2 = new Image();
 
 //It seems that firefox does not allow you to use getImageData(...) unless the source of the canvas is from the same domain, 
 //and it does not consider files on your hard drive as being from the same domain as an html document also on your hard drive.	
 //https://developpaper.com/explain-how-to-solve-the-cross-domain-problem-of-canvas-image-getimagedata-todataurl/
 	
 	var imgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Cephalopoda.jpg/1280px-Cephalopoda.jpg";
-	//var imgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Eiffel_tower_at_Exposition_Universelle%2C_Paris%2C_1889.jpg/800px-Eiffel_tower_at_Exposition_Universelle%2C_Paris%2C_1889.jpg";
+	var imgUrl2 = "https://i.imgur.com/nN2jJqD.png";
    
 	imgOriginal.crossOrigin = '';
 	imgDataOut.crossOrigin = '';
 	imgDataOut2.crossOrigin = '';
+	imgFilter.crossOrigin = '';
+	imgFilter2.crossOrigin = '';
     imgOriginal.src = imgUrl;
+	imgFilter.src = imgUrl2;
 	imgOriginal.onload = function(){
 		ctxOriginal.drawImage(imgOriginal, 0, 0);
 		ctxOutput.drawImage(imgOriginal, 0, 0);
@@ -219,17 +236,37 @@
 			ctxOutput2.strokeStyle = "rgb(" + k*255/100 + "," + k*255/100 + "," + k*255/100 + ")";
 			ctxOutput2.stroke();
 		}	
-
-	
-
-	
-
-
-
-
-	
-
 };	    
+
+imgFilter.onload = function(){
+		ctxFilter.drawImage(imgFilter, 0, 0);
+		ctxFilter2.drawImage(imgFilter, 0, 0);
+		//ctxOutput.drawImage(imgOriginal, 50, 50);
+		//ctxOutput.drawImage(imgOriginal, 100, 100);
+		
+		imgFilter = ctxFilter.getImageData(0, 0, 1250, 800);
+		imgFilter2 = ctxFilter2.getImageData(0, 0, 1250, 800);
+		
+		// invert colors
+		const vermelho2 = [];
+		const verde2 = [];
+		const azul2 = [];
+		const rgb2 = []
+		for (let i = 0; i < imgFilter2.data.length; i += 4) {
+			cinza = (imgFilter2.data[i] + imgFilter2.data[i+1] + imgFilter2.data[i+2])/3
+		    //vermelho.push(imgDataOut.data[i])
+			//verde.push(imgDataOut.data[i+1])
+			//azul.push(imgDataOut.data[i+2])
+			//rgb.push([imgDataOut.data[i],imgDataOut.data[i+1],imgDataOut.data[i+2]])
+			imgFilter2.data[i] = cinza;
+			imgFilter2.data[i+1] = cinza;
+			imgFilter2.data[i+2] = cinza;
+		}
+
+
+
+		ctxFilter2.putImageData(imgFilter2, 0, 0);
+}
 </script>
 
 	<footer>Rodrigo Pintucci 2021</footer>
