@@ -16,8 +16,8 @@
 <h3>Leitura e escrita de imagens com Canvas</h3>
 
 <figure>
-	<canvas id="imagemOriginal" width="2000" height="1258"></canvas>
-	<canvas id="imagemOutput" width="2000" height="1258"></canvas>
+	<canvas id="imagemOriginal" width="1250" height="800"></canvas>
+	<canvas id="imagemOutput" width="1250" height="800"></canvas>
 <figcaption>
 		Imagem da esquerda: Original. Imagem da direita: Imagem processada.
 	</figcaption>
@@ -29,6 +29,7 @@
 </p>
 <script>
 
+    const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0);
 
 	var canvasOriginal = document.getElementById("imagemOriginal");
 	var ctxOriginal = canvasOriginal.getContext("2d");
@@ -58,13 +59,96 @@
 		imgDataOut = ctxOriginal.getImageData(0, 0, 200, 200);
 		
 		// invert colors
+		const vermelho = [];
+		const verde = [];
+		const azul = [];
+		const rgb = []
 		for (let i = 0; i < imgDataOut.data.length; i += 4) {
-			imgDataOut.data[i] = 255 - imgDataOut.data[i];
-			imgDataOut.data[i+1] = 255 - imgDataOut.data[i+1];
-			imgDataOut.data[i+2] = 255 - imgDataOut.data[i+2];
+		    vermelho.push(imgDataOut.data[i])
+			verde.push(imgDataOut.data[i+1])
+			azul.push(imgDataOut.data[i+2])
+			rgb.push([imgDataOut.data[i],imgDataOut.data[i+1],imgDataOut.data[i+2]])
+			//imgDataOut.data[i] = 255 - imgDataOut.data[i];
+			//imgDataOut.data[i+1] = 255 - imgDataOut.data[i+1];
+			//imgDataOut.data[i+2] = 255 - imgDataOut.data[i+2];
 			//imgDataOut.data[i+3] = 255;
 		}
+		console.log(rgb[0][1])
+
+
+
 		ctxOutput.putImageData(imgDataOut, 0, 0);		
+		for (var j = 0; j < 255; j++){
+			ctxOutput.beginPath();
+			ctxOutput.moveTo(100 + j, 805);
+			ctxOutput.lineTo(100 + j, 805 - countOccurrences(vermelho, j));
+			ctxOutput.strokeStyle = "rgb(" + j + ", 0, 0)";
+			ctxOutput.stroke();
+
+			ctxOutput.beginPath();
+			ctxOutput.moveTo(400 + j, 805);
+			ctxOutput.lineTo(400 + j, 805 - countOccurrences(verde, j));
+			ctxOutput.strokeStyle = "rgb(0, " + j + ", 0)";
+			ctxOutput.stroke();
+
+			ctxOutput.beginPath();
+			ctxOutput.moveTo(700 + j, 805);
+			ctxOutput.lineTo(700 + j, 805 - countOccurrences(azul, j));
+			ctxOutput.strokeStyle = "rgb(0, 0, " + j + ")";
+			ctxOutput.stroke();
+		}	
+
+
+		function rgb2hsl(r, g, b){
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if(max == min){
+        h = s = 0; // achromatic
+    }else{
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return [h*360, s, l];
+}
+
+		hsl = []
+		lum = []
+
+		for (let i = 0; i < rgb.length; i += 1) {
+			hsl.push(rgb2hsl(rgb[i][0],rgb[i][1],rgb[i][2]));
+			lum.push(hsl[i][2])
+		}
+		console.log(rgb[0], hsl[0], lum[0])
+		console.log(rgb[1], hsl[1], lum[1])
+		console.log(lum)
+
+		lum2 = lum.map(function(each_element){
+    return Number(Math.floor(100*each_element.toFixed(2)));
+});
+        console.log(lum2)
+
+		for (var k = 0; k < 100; k++){
+			ctxOutput.beginPath();
+			ctxOutput.moveTo(1000 + 2.55*k, 805);
+			ctxOutput.lineTo(1000 + 2.55*k, (805 - 0.25*countOccurrences(lum2, k)));
+			ctxOutput.strokeStyle = "rgb(" + k*360/100 + "," + k*360/100 + "," + k*360/100 + ")";
+			ctxOutput.stroke();
+		}	
+
+
+
+
+	
+
 };	    
 </script>
 

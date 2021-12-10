@@ -120,3 +120,8 @@ th{
     color: rgba(111, 74, 149, 0)
 }
 
+canvas { 
+    padding: 0;
+    border-style: solid;
+    border-width: 10px;
+}
