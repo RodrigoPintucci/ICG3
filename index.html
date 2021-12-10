@@ -132,15 +132,15 @@
 		console.log(lum)
 
 		lum2 = lum.map(function(each_element){
-    return Number(Math.floor(100*each_element.toFixed(2)));
+    return Number(Math.floor((255*each_element).toFixed(2)));
 });
         console.log(lum2)
 
-		for (var k = 0; k < 100; k++){
+		for (var k = 0; k < 255; k++){
 			ctxOutput.beginPath();
-			ctxOutput.moveTo(1000 + 2.55*k, 805);
-			ctxOutput.lineTo(1000 + 2.55*k, (805 - 0.25*countOccurrences(lum2, k)));
-			ctxOutput.strokeStyle = "rgb(" + k*360/100 + "," + k*360/100 + "," + k*360/100 + ")";
+			ctxOutput.moveTo(1000 + k, 805);
+			ctxOutput.lineTo(1000 + k, (805 - countOccurrences(lum2, k)));
+			ctxOutput.strokeStyle = "rgb(" + k*255/100 + "," + k*255/100 + "," + k*255/100 + ")";
 			ctxOutput.stroke();
 		}	
 
