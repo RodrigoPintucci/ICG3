@@ -66,14 +66,16 @@
 
 	<h2>:.)</h2>
 <script>
-
+    //Inicia os eventos para a mudança nos inputs
 	document.getElementById("p0").addEventListener('change', filterchange1)
     for (let n = 1; n < 10; n ++){
 		document.getElementById("p" + n).addEventListener('change', filterchange2);
 	}
 
+	//Contabiliza as ocorrências de um valor num array
     const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0);
 
+	//Converte RGB para HSL
 	function rgb2hsl(r, g, b){
     r /= 255, g /= 255, b /= 255;
     var max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -95,33 +97,34 @@
     return [h*360, s, l];
 }
 
+	//Converte HSL para RGB
+		function hsl2rgb(h, s, l){
+			var r, g, b;
+		
+			if(s == 0){
+				r = g = b = l; 
+			}else{
+				var hue2rgb = function hue2rgb(p, q, t){
+					if(t < 0) t += 1;
+					if(t > 1) t -= 1;
+					if(t < 1/6) return p + (q - p) * 6 * t;
+					if(t < 1/2) return q;
+					if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+					return p;
+				}
+		
+				var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+				var p = 2 * l - q;
+				r = hue2rgb(p, q, h + 1/3);
+				g = hue2rgb(p, q, h);
+				b = hue2rgb(p, q, h - 1/3);
+			}
+		
+			return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+		}
 
-function hsl2rgb(h, s, l){
-    var r, g, b;
 
-    if(s == 0){
-        r = g = b = l; 
-    }else{
-        var hue2rgb = function hue2rgb(p, q, t){
-            if(t < 0) t += 1;
-            if(t > 1) t -= 1;
-            if(t < 1/6) return p + (q - p) * 6 * t;
-            if(t < 1/2) return q;
-            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-        }
-
-        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        var p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-    }
-
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-}
-
-
+    //Transforma NaN em 0
 	function NaNTo0(value){
 		if (isNaN(value)){
 			value = 0
@@ -129,8 +132,10 @@ function hsl2rgb(h, s, l){
 		return value
 	}
 
+	//Realiza o produto interno
 	dot = (a, b) => a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 
+	//Atribui variáveis aos Canvas
 	var canvasOriginal = document.getElementById("imagemOriginal");
 	var ctxOriginal = canvasOriginal.getContext("2d");
 	
@@ -149,6 +154,7 @@ function hsl2rgb(h, s, l){
 	var canvasFilter3 = document.getElementById("imagemFilter3");
 	var ctxFilter3 = canvasFilter3.getContext("2d");
 	
+	//Cria imagens
 	var imgOriginal = new Image();
 	var imgDataOut = new Image();
     var imgDataOut2 = new Image();
@@ -156,18 +162,17 @@ function hsl2rgb(h, s, l){
 	var imgFilter2 = new Image();
 	var imgFilter3 = new Image(); 
 
+	//Cria array de pesos
 	var peso0 = []
 		for (let n = 1; n < 10; n++) { 
 			peso0.push(document.getElementById("p"+n).value)
 		}
-
-//It seems that firefox does not allow you to use getImageData(...) unless the source of the canvas is from the same domain, 
-//and it does not consider files on your hard drive as being from the same domain as an html document also on your hard drive.	
-//https://developpaper.com/explain-how-to-solve-the-cross-domain-problem-of-canvas-image-getimagedata-todataurl/
 	
+	//Pega o link das imagens
 	var imgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Cephalopoda.jpg/1280px-Cephalopoda.jpg";
 	var imgUrl2 = "https://i.imgur.com/nN2jJqD.png";
    
+	//Fornece suporte ao CORS
 	imgOriginal.crossOrigin = '';
 	imgDataOut.crossOrigin = '';
 	imgDataOut2.crossOrigin = '';
@@ -176,6 +181,8 @@ function hsl2rgb(h, s, l){
 	imgFilter3.crossOrigin = '';
     imgOriginal.src = imgUrl;
 	imgFilter.src = imgUrl2;
+
+	//Função ao carregar
 	imgOriginal.onload = function(){
 		ctxOriginal.drawImage(imgOriginal, 0, 0);
 		ctxOutput.drawImage(imgOriginal, 0, 0);
@@ -183,6 +190,7 @@ function hsl2rgb(h, s, l){
 		
 		imgDataOut = ctxOriginal.getImageData(0, 0, 1250, 800);
 		
+		//Arrays de vermelho, verde, azul e RGB
 		const vermelho = [];
 		const verde = [];
 		const azul = [];
@@ -194,9 +202,9 @@ function hsl2rgb(h, s, l){
 			rgb.push([imgDataOut.data[i],imgDataOut.data[i+1],imgDataOut.data[i+2]])
 		}
 
-
-
-		ctxOutput.putImageData(imgDataOut, 0, 0);		
+		ctxOutput.putImageData(imgDataOut, 0, 0);	
+		
+		//Desenha os histogramas RGB
 		for (var j = 0; j < 255; j++){
 			ctxOutput.beginPath();
 			ctxOutput.moveTo(100 + j, 805);
@@ -220,15 +228,18 @@ function hsl2rgb(h, s, l){
 		hsl = []
 		lum = []
 
+		//Cria arrays de HSL e luminância
 		for (let i = 0; i < rgb.length; i += 1) {
 			hsl.push(rgb2hsl(rgb[i][0],rgb[i][1],rgb[i][2]));
 			lum.push(hsl[i][2])
 		}
 
+		//Cria valores de luminância mais padronizados ao RGB
 		lum2 = lum.map(function(each_element){
     return Number(Math.floor((255*each_element).toFixed(2)));
 });
 
+        //Cria histograma de luminância
 		for (var k = 0; k < 255; k++){
 			ctxOutput.beginPath();
 			ctxOutput.moveTo(1000 + k, 805);
@@ -237,10 +248,10 @@ function hsl2rgb(h, s, l){
 			ctxOutput.stroke();
 		}	
 
+		//Cria novo array HSL após correção
 		const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length
 		media_lum = arrAvg(lum)
         var pesolum = document.getElementById("p0").value
-
 		for (let i = 0; i < lum.length; i += 1) {
 			lum[i] = media_lum + (lum[i] - media_lum) * pesolum
 			hsl[i][2] = lum[i]
@@ -248,12 +259,14 @@ function hsl2rgb(h, s, l){
 
 
 
-   
+    //Transforma novo HSL em RGB
 	for (let i = 0; i < rgb.length; i += 1) {
 				rgb[i] = (hsl2rgb(hsl[i][0]/360,hsl[i][1],hsl[i][2]));
 	} 
 			
 	imgDataOut2 = ctxOriginal.getImageData(0, 0, 1250, 800);
+
+	//Refaz a imagem
 	for (let i = 0; i < imgDataOut2.data.length; i += 4) {
 		imgDataOut2.data[i] = rgb[i/4][0];
 		imgDataOut2.data[i+1] = rgb[i/4][1];
@@ -264,7 +277,7 @@ function hsl2rgb(h, s, l){
 	lum2 = lum.map(function(each_element){
     return Number(Math.floor((255*each_element).toFixed(2)));
 });
-
+    //Cria novo histograma de luminância
 		for (var k = 0; k < 255; k++){
 			ctxOutput2.beginPath();
 			ctxOutput2.moveTo(1000 + k, 805);
@@ -273,8 +286,9 @@ function hsl2rgb(h, s, l){
 			ctxOutput2.stroke();
 		}	
 };	    
-
-imgFilter.onload = function(){
+  
+	//Função ao carregar
+	imgFilter.onload = function(){
 		ctxFilter.drawImage(imgFilter, 0, 0);
 		ctxFilter2.drawImage(imgFilter, 0, 0);
 		ctxFilter3.drawImage(imgFilter, 0, 0);
@@ -283,7 +297,7 @@ imgFilter.onload = function(){
 		imgFilter2 = ctxFilter2.getImageData(0, 0, 1020, 550);
 		imgFilter3 = ctxFilter3.getImageData(0, 0, 1020, 550);
 		
-
+		//Torna os pixeis cinza
 		for (let i = 0; i < imgFilter2.data.length; i += 4) {
 			cinza = (imgFilter2.data[i] + imgFilter2.data[i+1] + imgFilter2.data[i+2])/3
 			imgFilter2.data[i] = cinza;
@@ -294,7 +308,7 @@ imgFilter.onload = function(){
 		ctxFilter2.putImageData(imgFilter2, 0, 0);
 
 
-
+		//Aplica o filtro
 		for (let i = 0; i < imgFilter3.data.length; i += 4) {
 			if ( (i%(4*imgFilter2.width) == 0) || 
 			(i%(4*imgFilter2.width) == 4*imgFilter2.width - 4) ||
@@ -319,6 +333,7 @@ imgFilter.onload = function(){
 		ctxFilter3.putImageData(imgFilter3, 0, 0);
 }
 
+    //Função para mudança no peso da primeira imagem (basicamente copia e cola)
     function filterchange1(){	
 		rgb = []
 		for (let i = 0; i < imgDataOut.data.length; i += 4) {
@@ -383,6 +398,7 @@ imgFilter.onload = function(){
 
 	}   
 
+	//Função para mudança nos pesos da segunda imagem (basicamente copia e cola)
     function filterchange2(){
 		peso0 = []
 		for (let n = 1; n < 10; n++) { 
@@ -414,8 +430,10 @@ imgFilter.onload = function(){
 		ctxFilter3.putImageData(imgFilter3, 0, 0);
 
 	}
-</script>
 
+	//Meio bagunçado mas feito com carinho :.)
+</script>
+    <!-- eu -->
 	<footer>Rodrigo Pintucci 2021</footer>
 </body>
 </html>
