@@ -14,7 +14,7 @@ body{
 h1{
     letter-spacing: 5px;
     color: white;
-    text-shadow: 3px 0 0 #000, -3px 0 0 #000, 0 3px 0 #000, 0 -3px 0 #000, 2px 2px #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    text-shadow: 3px 0 0 rgb(17, 11, 65), -3px 0 0 rgb(17, 11, 65), 0 3px 0 rgb(17, 11, 65), 0 -3px 0 rgb(17, 11, 65), 2px 2px rgb(17, 11, 65), -2px -2px 0 rgb(17, 11, 65), 2px -2px 0 rgb(17, 11, 65), -2px 2px 0 rgb(17, 11, 65);
     font-size: 50px;
     text-align: center;
     margin-top: 50px;
@@ -70,10 +70,19 @@ img{
 }
 
 div{
-    width: 1000px;
-    height: 200px;
-    margin-bottom: 100px;
-    background-color: RebeccaPurple;
+    text-align: center;
+    padding: 5px;
+}
+
+input{
+    font-size:24px;
+    padding: 0%;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    border-style: solid;
+    border-width: 5px;
+    border-color: rgb(17, 11, 65);
 }
 
 p{
@@ -123,6 +132,7 @@ th{
 canvas { 
     border-style: solid;
     border-width: 10px;
+    border-color: rgb(17, 11, 65);
     padding: 0;
     margin-left: auto;
     margin-right: auto;
@@ -132,4 +142,9 @@ canvas {
 h2 {
     font-size: 30px;
     text-align: center;
+    color: #d7e0f5;
+}
+
+footer {
+    color: #d7e0f5;
 }

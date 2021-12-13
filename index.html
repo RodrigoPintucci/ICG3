@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title> Processamento de imagens em Canvas </title>
+	<title> Processamento de imagens</title>
 	<!-- MathJax para equações matemáticas em TeX -->
 	<link href="style2.css" rel="stylesheet"/>
+	<link rel="icon" href="tabbyena3.png">
 	<script type="text/javascript" async
 		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async>
 	</script>
@@ -21,7 +22,7 @@
 	<canvas id="imagemOriginal" width="1250" height="800"></canvas>
 
 	<h1>Histogramas de RGB e luminância</h1>
-	<h2>Tranformando os canais de cor da imagem original em arrays, é possível desenhar histogramas baseado na ocorrëncia de cada canal de 0 a 255.</h2>
+	<h2>Tranformando os canais de cor da imagem original em arrays, é possível desenhar histogramas baseado na ocorrência de cada canal de 0 a 255.</h2>
 	<h2>Convertendo pra HSL, podemos analisar também a ocorrência de luminância.</h2>
 	<canvas id="imagemOutput" width="1250" height="800"></canvas>
 
@@ -29,15 +30,106 @@
 	<h2>Após modificar o canal de luminância, podemos retornar ao padrão RGB e perceber a diferença de paleta. Um novo histograma acompanha esta imagem para indicar a diferença.</h2>
 	<canvas id="imagemOutput2" width="1250" height="800"></canvas>
 
-	<h1>Aplicação de Filtros</h1>
-	<h2>Agora, vamos pegar outra imagem para aplicar filtros. Para tornar esse processo mais fácil, primeiro vamos torná-la preto e branco.</h2>
-	<canvas id="imagemFilter" width="1020" height="550"></canvas>
+	<h2>Caso queira, pode atribuir um peso customizado para a correção de luminância:</h2>
+	<div>
+		<input id="p0" type="number" value="0.5" step="0.1" min="0" max="10">
+	</div>
 
+	<h1>Aplicação de Filtros</h1>
+	<h2>Agora, vamos aplicar filtros em uma imagem. Dessa vez, peguei uma foto do cantor Rick Astley.</h2>
+	<canvas id="imagemFilter" width="1020" height="550"></canvas>
+	
+	<h1>Preto e Branco</h1>
+	<h2>Para facilitar o processo, tornei a imagem preto e branco ao igualar os canais RGB no valor médio de cada pixel.</h2>
 	<canvas id="imagemFilter2" width="1020" height="550"></canvas>
 
+	<h1>Resultado final</h1>
+	<h2>Atribuindo alguns pesos em uma matriz 3x3, obtive como resultado um filtro de relevo.</h2>
+	<canvas id="imagemFilter3" width="1020" height="550"></canvas>
+ 
+	<h2>Novamente, você pode customizar os próprios valores:</h2>
+	<div>
+		<input id="p1" type="number" value="-2" step="0.1" min="-10" max="10">
+		<input id="p2" type="number" value="-1" step="0.1" min="-10" max="10">
+		<input id="p3" type="number" value="0"  step="0.1" min="-10" max="10">
+	</div>
+	<div>
+		<input id="p4" type="number" value="-1" step="0.1" min="-10" max="10">
+		<input id="p5" type="number" value="1"  step="0.1" min="-10" max="10">
+		<input id="p6" type="number" value="1"  step="0.1" min="-10" max="10">
+	</div>
+	<div>
+		<input id="p7" type="number" value="0"  step="0.1" min="-10" max="10">
+		<input id="p8" type="number" value="1"  step="0.1" min="-10" max="10">
+		<input id="p9" type="number" value="2"  step="0.1" min="-10" max="10">
+	</div>
+
+	<h2>:.)</h2>
 <script>
 
+	document.getElementById("p0").addEventListener('change', filterchange1)
+    for (let n = 1; n < 10; n ++){
+		document.getElementById("p" + n).addEventListener('change', filterchange2);
+	}
+
     const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0);
+
+	function rgb2hsl(r, g, b){
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if(max == min){
+        h = s = 0; 
+    }else{
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return [h*360, s, l];
+}
+
+
+function hsl2rgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; 
+    }else{
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+
+	function NaNTo0(value){
+		if (isNaN(value)){
+			value = 0
+		}
+		return value
+	}
+
+	dot = (a, b) => a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 
 	var canvasOriginal = document.getElementById("imagemOriginal");
 	var ctxOriginal = canvasOriginal.getContext("2d");
@@ -53,12 +145,21 @@
 
 	var canvasFilter2 = document.getElementById("imagemFilter2");
 	var ctxFilter2 = canvasFilter2.getContext("2d");
+
+	var canvasFilter3 = document.getElementById("imagemFilter3");
+	var ctxFilter3 = canvasFilter3.getContext("2d");
 	
 	var imgOriginal = new Image();
 	var imgDataOut = new Image();
     var imgDataOut2 = new Image();
 	var imgFilter = new Image();
 	var imgFilter2 = new Image();
+	var imgFilter3 = new Image(); 
+
+	var peso0 = []
+		for (let n = 1; n < 10; n++) { 
+			peso0.push(document.getElementById("p"+n).value)
+		}
 
 //It seems that firefox does not allow you to use getImageData(...) unless the source of the canvas is from the same domain, 
 //and it does not consider files on your hard drive as being from the same domain as an html document also on your hard drive.	
@@ -72,35 +173,26 @@
 	imgDataOut2.crossOrigin = '';
 	imgFilter.crossOrigin = '';
 	imgFilter2.crossOrigin = '';
+	imgFilter3.crossOrigin = '';
     imgOriginal.src = imgUrl;
 	imgFilter.src = imgUrl2;
 	imgOriginal.onload = function(){
 		ctxOriginal.drawImage(imgOriginal, 0, 0);
 		ctxOutput.drawImage(imgOriginal, 0, 0);
 		ctxOutput2.drawImage(imgOriginal, 0, 0);
-		//ctxOutput.drawImage(imgOriginal, 50, 50);
-		//ctxOutput.drawImage(imgOriginal, 100, 100);
 		
 		imgDataOut = ctxOriginal.getImageData(0, 0, 1250, 800);
 		
-		// invert colors
 		const vermelho = [];
 		const verde = [];
 		const azul = [];
 		const rgb = []
-		console.log(imgDataOut.data.length)
 		for (let i = 0; i < imgDataOut.data.length; i += 4) {
 		    vermelho.push(imgDataOut.data[i])
 			verde.push(imgDataOut.data[i+1])
 			azul.push(imgDataOut.data[i+2])
 			rgb.push([imgDataOut.data[i],imgDataOut.data[i+1],imgDataOut.data[i+2]])
-			//imgDataOut.data[i] = 255 - imgDataOut.data[i];
-			//imgDataOut.data[i+1] = 255 - imgDataOut.data[i+1];
-			//imgDataOut.data[i+2] = 255 - imgDataOut.data[i+2];
-			//imgDataOut.data[i+3] = 255;
 		}
-		console.log(rgb[0][1])
-		console.log(vermelho.length)
 
 
 
@@ -125,28 +217,6 @@
 			ctxOutput.stroke();
 		}	
 
-
-		function rgb2hsl(r, g, b){
-    r /= 255, g /= 255, b /= 255;
-    var max = Math.max(r, g, b), min = Math.min(r, g, b);
-    var h, s, l = (max + min) / 2;
-
-    if(max == min){
-        h = s = 0; // achromatic
-    }else{
-        var d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch(max){
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-    }
-
-    return [h*360, s, l];
-}
-
 		hsl = []
 		lum = []
 
@@ -154,14 +224,10 @@
 			hsl.push(rgb2hsl(rgb[i][0],rgb[i][1],rgb[i][2]));
 			lum.push(hsl[i][2])
 		}
-		console.log(rgb[0], hsl[0], lum[0])
-		console.log(rgb[1], hsl[1], lum[1])
-		console.log(lum)
 
 		lum2 = lum.map(function(each_element){
     return Number(Math.floor((255*each_element).toFixed(2)));
 });
-        console.log(lum2)
 
 		for (var k = 0; k < 255; k++){
 			ctxOutput.beginPath();
@@ -171,63 +237,33 @@
 			ctxOutput.stroke();
 		}	
 
-		console.log(lum)
 		const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length
 		media_lum = arrAvg(lum)
-        var peso = 0.5
+        var pesolum = document.getElementById("p0").value
 
 		for (let i = 0; i < lum.length; i += 1) {
-			lum[i] = media_lum + (lum[i] - media_lum) * peso
+			lum[i] = media_lum + (lum[i] - media_lum) * pesolum
 			hsl[i][2] = lum[i]
 		}
-		console.log(hsl[0])
 
 
-		function hsl2rgb(h, s, l){
-    var r, g, b;
 
-    if(s == 0){
-        r = g = b = l; // achromatic
-    }else{
-        var hue2rgb = function hue2rgb(p, q, t){
-            if(t < 0) t += 1;
-            if(t > 1) t -= 1;
-            if(t < 1/6) return p + (q - p) * 6 * t;
-            if(t < 1/2) return q;
-            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-        }
-
-        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        var p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-    }
-
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-}
    
 	for (let i = 0; i < rgb.length; i += 1) {
 				rgb[i] = (hsl2rgb(hsl[i][0]/360,hsl[i][1],hsl[i][2]));
 	} 
-		console.log((hsl2rgb(hsl[0][0]/360,hsl[0][1],hsl[0][2])))
 			
 	imgDataOut2 = ctxOriginal.getImageData(0, 0, 1250, 800);
-	console.log(imgDataOut2.data.length, rgb.length)
 	for (let i = 0; i < imgDataOut2.data.length; i += 4) {
 		imgDataOut2.data[i] = rgb[i/4][0];
 		imgDataOut2.data[i+1] = rgb[i/4][1];
 		imgDataOut2.data[i+2] = rgb[i/4][2];
 	}
 	ctxOutput2.putImageData(imgDataOut2, 0, 0);
-	console.log(imgDataOut2.data)
-	console.log(rgb.length, rgb)
 
 	lum2 = lum.map(function(each_element){
     return Number(Math.floor((255*each_element).toFixed(2)));
 });
-        console.log(lum2)
 
 		for (var k = 0; k < 255; k++){
 			ctxOutput2.beginPath();
@@ -241,32 +277,143 @@
 imgFilter.onload = function(){
 		ctxFilter.drawImage(imgFilter, 0, 0);
 		ctxFilter2.drawImage(imgFilter, 0, 0);
-		//ctxOutput.drawImage(imgOriginal, 50, 50);
-		//ctxOutput.drawImage(imgOriginal, 100, 100);
+		ctxFilter3.drawImage(imgFilter, 0, 0);
 		
-		imgFilter = ctxFilter.getImageData(0, 0, 1250, 800);
-		imgFilter2 = ctxFilter2.getImageData(0, 0, 1250, 800);
+		imgFilter = ctxFilter.getImageData(0, 0, 1020, 550);
+		imgFilter2 = ctxFilter2.getImageData(0, 0, 1020, 550);
+		imgFilter3 = ctxFilter3.getImageData(0, 0, 1020, 550);
 		
-		// invert colors
-		const vermelho2 = [];
-		const verde2 = [];
-		const azul2 = [];
-		const rgb2 = []
+
 		for (let i = 0; i < imgFilter2.data.length; i += 4) {
 			cinza = (imgFilter2.data[i] + imgFilter2.data[i+1] + imgFilter2.data[i+2])/3
-		    //vermelho.push(imgDataOut.data[i])
-			//verde.push(imgDataOut.data[i+1])
-			//azul.push(imgDataOut.data[i+2])
-			//rgb.push([imgDataOut.data[i],imgDataOut.data[i+1],imgDataOut.data[i+2]])
 			imgFilter2.data[i] = cinza;
 			imgFilter2.data[i+1] = cinza;
 			imgFilter2.data[i+2] = cinza;
 		}
 
-
-
 		ctxFilter2.putImageData(imgFilter2, 0, 0);
+
+
+
+		for (let i = 0; i < imgFilter3.data.length; i += 4) {
+			if ( (i%(4*imgFilter2.width) == 0) || 
+			(i%(4*imgFilter2.width) == 4*imgFilter2.width - 4) ||
+			(i - (4*imgFilter2.width) < 0) || 
+			(i + (4*imgFilter2.width) > imgFilter2.data.length) ){
+				imgFilter3.data[i] = 0
+			} else {
+				pixel = [NaNTo0(imgFilter2.data[i - 4*(imgFilter2.width) - 4]), 
+				NaNTo0(imgFilter2.data[i - 4*(imgFilter2.width)]), 
+				NaNTo0(imgFilter2.data[i - 4*(imgFilter2.width) + 4]), 
+				NaNTo0(imgFilter2.data[i - 4]), NaNTo0(imgFilter2.data[i]), 
+				NaNTo0(imgFilter2.data[i + 4]), 
+				NaNTo0(imgFilter2.data[i + 4*(imgFilter2.width) - 4]), 
+				NaNTo0(imgFilter2.data[i + 4*(imgFilter2.width)]), 
+				NaNTo0(imgFilter2.data[i + 4*(imgFilter2.width) + 4])]
+				imgFilter3.data[i] = dot(pixel, peso0)
+			}
+			imgFilter3.data[i+1] = imgFilter3.data[i]
+			imgFilter3.data[i+2] = imgFilter3.data[i]
+		}
+	
+		ctxFilter3.putImageData(imgFilter3, 0, 0);
 }
+
+    function filterchange1(){	
+		rgb = []
+		for (let i = 0; i < imgDataOut.data.length; i += 4) {
+			rgb.push([imgDataOut.data[i],imgDataOut.data[i+1],imgDataOut.data[i+2]])
+		}
+
+		hsl = []
+		lum = []
+
+		for (let i = 0; i < rgb.length; i += 1) {
+			hsl.push(rgb2hsl(rgb[i][0],rgb[i][1],rgb[i][2]));
+			lum.push(hsl[i][2])
+		}
+
+		lum2 = lum.map(function(each_element){
+    return Number(Math.floor((255*each_element).toFixed(2)));
+});
+
+		for (var k = 0; k < 255; k++){
+			ctxOutput.beginPath();
+			ctxOutput.moveTo(1000 + k, 805);
+			ctxOutput.lineTo(1000 + k, (805 - countOccurrences(lum2, k)/20));
+			ctxOutput.strokeStyle = "rgb(" + k*255/100 + "," + k*255/100 + "," + k*255/100 + ")";
+			ctxOutput.stroke();
+		}	
+
+		const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length
+		media_lum = arrAvg(lum)
+        var pesolum = document.getElementById("p0").value
+
+		for (let i = 0; i < lum.length; i += 1) {
+			lum[i] = media_lum + (lum[i] - media_lum) * pesolum
+			hsl[i][2] = lum[i]
+		}
+
+
+
+   
+	for (let i = 0; i < rgb.length; i += 1) {
+				rgb[i] = (hsl2rgb(hsl[i][0]/360,hsl[i][1],hsl[i][2]));
+	} 
+			
+	imgDataOut2 = ctxOriginal.getImageData(0, 0, 1250, 800);
+	for (let i = 0; i < imgDataOut2.data.length; i += 4) {
+		imgDataOut2.data[i] = rgb[i/4][0];
+		imgDataOut2.data[i+1] = rgb[i/4][1];
+		imgDataOut2.data[i+2] = rgb[i/4][2];
+	}
+	ctxOutput2.putImageData(imgDataOut2, 0, 0);
+
+	lum2 = lum.map(function(each_element){
+    return Number(Math.floor((255*each_element).toFixed(2)));
+});
+
+		for (var k = 0; k < 255; k++){
+			ctxOutput2.beginPath();
+			ctxOutput2.moveTo(1000 + k, 805);
+			ctxOutput2.lineTo(1000 + k, (805 - countOccurrences(lum2, k)/20));
+			ctxOutput2.strokeStyle = "rgb(" + k*255/100 + "," + k*255/100 + "," + k*255/100 + ")";
+			ctxOutput2.stroke();
+		}	
+
+	}   
+
+    function filterchange2(){
+		peso0 = []
+		for (let n = 1; n < 10; n++) { 
+			peso0.push(document.getElementById("p"+n).value)
+		}
+
+
+		for (let i = 0; i < imgFilter3.data.length; i += 4) {
+			if ( (i%(4*imgFilter2.width) == 0) || 
+			(i%(4*imgFilter2.width) == 4*imgFilter2.width - 4) ||
+			(i - (4*imgFilter2.width) < 0) || 
+			(i + (4*imgFilter2.width) > imgFilter2.data.length) ){
+				imgFilter3.data[i] = 0
+			} else {
+				pixel = [NaNTo0(imgFilter2.data[i - 4*(imgFilter2.width) - 4]), 
+				NaNTo0(imgFilter2.data[i - 4*(imgFilter2.width)]), 
+				NaNTo0(imgFilter2.data[i - 4*(imgFilter2.width) + 4]), 
+				NaNTo0(imgFilter2.data[i - 4]), NaNTo0(imgFilter2.data[i]), 
+				NaNTo0(imgFilter2.data[i + 4]), 
+				NaNTo0(imgFilter2.data[i + 4*(imgFilter2.width) - 4]), 
+				NaNTo0(imgFilter2.data[i + 4*(imgFilter2.width)]), 
+				NaNTo0(imgFilter2.data[i + 4*(imgFilter2.width) + 4])]
+				imgFilter3.data[i] = dot(pixel, peso0)
+			}
+			imgFilter3.data[i+1] = imgFilter3.data[i]
+			imgFilter3.data[i+2] = imgFilter3.data[i]
+		}
+	
+		ctxFilter3.putImageData(imgFilter3, 0, 0);
+
+	}
 </script>
 
 	<footer>Rodrigo Pintucci 2021</footer>
